@@ -16,3 +16,4 @@
 - [MHS CTF 2022](./mhsctf/README.md)
 - [CODEGATE 2022 Pre](./codegate2022/README.md)
 - [foobar CTF 2022](./foobar2022/README.md)
+- [pico CTF 2022](./picoctf2022/README.md)
