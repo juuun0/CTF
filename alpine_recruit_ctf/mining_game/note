@@ -1,0 +1,23 @@
+cpp source code도 함께 제공되었기에 쉽게 분석을 진행할 수 있었다. No PIE와 Partial RELRO 이기 때문에 특정 주소로 조작할 수 있을 것으로 보였고 system("/bin/sh") 함수를 호출하는 get_shell() 함수가 존재하여 이즤할 것이 예상되었다.
+
+그러나 실질적으로 buffer overflow와 관련된 부분은 존재하지 않았다. 모든 문자열 복사 과정에서 strncpy를 사용하였고 buffer size에 비해 옮기는 값이 큰 부분도 없었다.
+
+코드를 계속 보던 중 취약점을 발견한 부분은 RareEarth class의 print_description() 함수에 대한 overriding 과정에서 발견할 수 있었다.
+
+해당 부분을 집중하며 코드를 다시 정독해보았다. 우선 mining의 결과는 총 3가지로 분류할 수 있었다.
+
+- Not Found
+- Undiscovered
+- Rare Earth
+
+Not Found의 경우 말 그대로 조건 충족에 실패하여 mining 결과가 없는 경우이며 Undiscovered의 경우 무언가 발견은 하였으나 프로그램에는 정의되어 있지 않은 제 3 요소였다.
+Rare Earth의 경우 프로그램에 사전에 정의되어 있는 항목들에 해당되는 경우이며 Name, Symbol, Description 등이 그에 맞게 정의되어 있다.
+
+Undiscovered의 경우 발견에 성공하였을 때 직접 description을 정의해주어야 했으며 이름은 Unknown, Symbol은 Un으로 고정되어 있었다.
+
+show mineral book 메뉴의 경우 현재까지 발견한 항목들을 리스트로 출력해주었다. 여기서 신기한 점은 Rare Earth 항목의 경우 각각의 커스텀 된 출력 함수를 가지고 있었고, 이를 기존 함수에 overriding 하여 출력하는 방식이었다. 즉, 완전 정적으로 지정되어 있다고 보면 된다.
+
+overriding 방식은 description에 저장된 값을 바탕으로 비교하였다. (솔직히 이 부분은 완전 분석한 건 아니라서 자세히는 설명을 못하겠다.)
+문제점으로는 이 description을 edit 메뉴를 통해서 변경할 수 있다는 점이었다. 이는 rare earth의 description에만 해당되는 이야기다. 따라서 rare_earth를 찾아내고, 해당 description을 임의의 값으로 변경한 다음 다시 show 함수를 호출하면 SIGSEGV가 발생하는 것을 확인할 수 있었다.
+
+gdb를 통해 이 호출되는 주소가 처음 입력한 8 byte임을 확인하였으므로 코드를 작성해서 get_shell 주소를 전달하는 코드를 작성하여 해결할 수 있었다.

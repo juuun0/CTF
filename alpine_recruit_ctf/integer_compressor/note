@@ -1,0 +1,41 @@
+일단 1번 메뉴를 통해 숫자를 입력받는다. byte, word, dword, qword 4개로 분류하여 packing 한다.
+2번은 가장 최근 것 부터 삭제한다.
+3번 메뉴는 현재까지 입력한 값들을 다 하나로 처리해서 압축한다.
+여기서 그냥 hex로 바꾸는 게 아니라 특정 연산을 통해 합쳐진다.
+exit의 경우 while문을 break 하는 식으로 종료한다.
+get_shell 함수 주소는 0x402576이다.
+
+우선 많은 cpp가 있지만 main부터
+뭔가 특별하게 정의되진 않고 함수 호출이 대부분이다. 그리고 다른 파일을 include해서 쓴다.
+
+Common.cpp
+유틸리티 함수들이 등록되어 있다.
+
+alarm, getshell, print_banner() 함수 등의 동작 방식이 정의되어 있다.
+
+Archiver.cpp
+함수의 세분화가 이루어진다. 특히 add 함수의 경우는 입력값의 크기에 따라 pack_byte, pack_word, pack_dword, pack_qword를 상황에 맞춰 호출하게끔 한다.
+del 함수도 마찬가지로 가장 최근에 입력된 값의 type에 따라 unpack ~~ 함수를 맞춰서 호출한다.
+
+Compressor.cpp
+pack_~ 함수들의 상세한 동작이 정의되어 있음.
+Stream.cpp 내에 존재하는 함수를 호출하여 값을 배열에 저장함.
+pack_byte() : 심플하게 stream->add_uint8() 호출 :: 별도의 변환 없이 입력값 그대로 저장
+pack_word() : x < 0x80일 경우 stream->add_uint8() 호출(근데 그럴 일이 있나? word로 넘어온 이상 0xff 보다 클텐데)
+            x < 0x4000 일 경우 x | 0x8000 값으로 stream->add_uint16() 호출
+            이도저도 아니면 add_uint8(0xff) 호출 후 add_uint16(x) 호
+pack_dword() : 0x4000일 때까지는 pack_word와 마찬가지로 처리
+            0x20000000 보다 작으면 add_uint32(x | 0xc0000000) 호출
+            이도저도 아니면 add_uint8(0xff) 후 add_uint32(x)
+pack_qword() : x를 uint32로 캐스팅 한 pack_dword() 호출 후 x >> 32 casting uint32한 pack_dword() 호출
+
+Decompressor.cpp
+unpack_~ 함수들이 정의되어 있음.
+unpack_byte() : 마찬가지로 심플하게 stream->del_uint8() 호출 :: return value는 먼저 입력받았던 순서대로 1 byte 씩
+unpack_word() : 우선 x 라는 변수에 unpack_byte() 를 호출한 결과를 저장한다. 그리고 x & 0x80 이 참일 때 x & 0xc0 == 0xc0 일 경우 결론적으로 x가 0xc0인 경우 x에 (unpack_byte << 8) | unpack_byte 결과를 저장하는데 이해가 안가는게 이러면 3 byte를 unpack 하는 거 아닌가..? 0x4000 이상일 경우 앞에 0xff가 붙어서 3 byte가 되긴 하네
+            마찬가지로 0x80은 참이지만 0xc0은 아닐 경우 (x & 0x7f << 8) | unpack_byte 를 저장한다.
+다른 함수도 마찬가지로 임의의 규칙에 의해 packing 된 값을 정상적으로 unpacking 하기 위해 signature를 확인한 뒤 그에 맞춰 값을 변환하는 것으로 보인다.
+
+Stream.cpp
+잠시 unpack 함수를 이해하려고 와리가리하면서 봤는데 add로 추가할 때는 end index 값을 증가시키며 추가하고 값을 제거할 때는 start index를 증가시키며 삭제한 것처럼 보이게끔 동작함
+
