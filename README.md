@@ -19,3 +19,4 @@
 - [pico CTF 2022](./picoctf2022/README.md)
 - [Alpine Recruit CTF](./alpine_recruit_ctf/README.md)
 - [SSTF 2022](./SSTF2022/README.md)
+- [SECCON 2022](./SECCON2022/README.md)
