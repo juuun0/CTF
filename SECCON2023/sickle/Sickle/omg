@@ -1,0 +1,81 @@
+    0: \x8c SHORT_BINUNICODE 'builtins'
+   10: \x8c SHORT_BINUNICODE 'getattr'
+   19: \x93 STACK_GLOBAL
+   20: \x94 MEMOIZE    (as 0)
+   21: 2    DUP
+   22: \x8c SHORT_BINUNICODE 'builtins'
+   32: \x8c SHORT_BINUNICODE 'input'
+   39: \x93 STACK_GLOBAL
+   40: \x8c SHORT_BINUNICODE 'FLAG> '
+   48: \x85 TUPLE1
+   49: R    REDUCE
+   50: \x8c SHORT_BINUNICODE 'encode'
+   58: \x86 TUPLE2
+   59: R    REDUCE
+   60: )    EMPTY_TUPLE
+   61: R    REDUCE
+   62: \x94 MEMOIZE    (as 1)
+   63: 0    POP
+   64: g    GET        0
+   67: \x8c SHORT_BINUNICODE 'builtins'
+   77: \x8c SHORT_BINUNICODE 'dict'
+   83: \x93 STACK_GLOBAL
+   84: \x8c SHORT_BINUNICODE 'get'
+   89: \x86 TUPLE2
+   90: R    REDUCE
+   91: \x8c SHORT_BINUNICODE 'builtins'
+  101: \x8c SHORT_BINUNICODE 'globals'
+  110: \x93 STACK_GLOBAL
+  111: )    EMPTY_TUPLE
+  112: R    REDUCE
+  113: \x8c SHORT_BINUNICODE 'f'
+  116: \x86 TUPLE2
+  117: R    REDUCE
+  118: \x8c SHORT_BINUNICODE 'seek'
+  124: \x86 TUPLE2
+  125: R    REDUCE
+  126: \x94 MEMOIZE    (as 2)
+  127: g    GET        0
+  130: \x8c SHORT_BINUNICODE 'builtins'
+  140: \x8c SHORT_BINUNICODE 'int'
+  145: \x93 STACK_GLOBAL
+  146: \x8c SHORT_BINUNICODE '__add__'
+  155: \x86 TUPLE2
+  156: R    REDUCE
+  157: \x94 MEMOIZE    (as 3)
+  158: 0    POP
+  159: g    GET        0
+  162: \x8c SHORT_BINUNICODE 'builtins'
+  172: \x8c SHORT_BINUNICODE 'int'
+  177: \x93 STACK_GLOBAL
+  178: \x8c SHORT_BINUNICODE '__mul__'
+  187: \x86 TUPLE2
+  188: R    REDUCE
+  189: \x94 MEMOIZE    (as 4)
+  190: 0    POP
+  191: g    GET        0
+  194: \x8c SHORT_BINUNICODE 'builtins'
+  204: \x8c SHORT_BINUNICODE 'int'
+  209: \x93 STACK_GLOBAL
+  210: \x8c SHORT_BINUNICODE '__eq__'
+  218: \x86 TUPLE2
+  219: R    REDUCE
+  220: \x94 MEMOIZE    (as 5)
+  221: 0    POP
+  222: g    GET        3
+  225: g    GET        5
+  228: \x8c SHORT_BINUNICODE 'builtins'
+  238: \x8c SHORT_BINUNICODE 'len'
+  243: \x93 STACK_GLOBAL
+  244: g    GET        1
+  247: \x85 TUPLE1
+  248: R    REDUCE
+  249: M    BININT2    64
+  252: \x86 TUPLE2
+  253: R    REDUCE
+  254: M    BININT2    261
+  257: \x86 TUPLE2
+  258: R    REDUCE
+  259: \x85 TUPLE1
+  260: R    REDUCE
+  261: .    STOP
