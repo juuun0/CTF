@@ -20,3 +20,8 @@
 - [Alpine Recruit CTF](./alpine_recruit_ctf/README.md)
 - [SSTF 2022](./SSTF2022/README.md)
 - [SECCON 2022](./SECCON2022/README.md)
+
+## 2023
+
+- [SECCON2023](./SECCON2023/)
+- [SSTF 2023](./SSTF2023/)
